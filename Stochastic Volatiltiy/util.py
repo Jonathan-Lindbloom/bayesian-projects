@@ -1,3 +1,11 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+import pandas_market_calendars as mcal
+import datetime as dt
+import scipy as sp
+import pymc3 as pm
+
 def calc_forecast(data, ppc_samples, fdays):
     '''
     Computes samples for the future volatility and return processes. Output like (datetime_idx, vol_process, return_process).
