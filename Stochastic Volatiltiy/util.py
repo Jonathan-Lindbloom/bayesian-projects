@@ -30,8 +30,11 @@ def calc_forecast(data, ppc_samples, fdays):
     # Grab samples of nu
     nus = ppc_samples["nu"]
     
+    # Grab samples of mu
+    mus = ppc_samples["mu"]
+    
     # Now generate another process that continues the previous
-    normal_rvs = np.random.normal(scale=np.array([list(sigmas**1) for j in range(fdays)]).T)
+    normal_rvs = np.random.normal(scale=np.array([list(sigmas**2) for j in range(fdays)]).T)
 
     # Center the first obs on the previous
     normal_rvs[:,0] += prev_s
@@ -43,7 +46,7 @@ def calc_forecast(data, ppc_samples, fdays):
     new_vol_proc = np.exp(-2*new_s_t)
 
     # Draw samples for the new return paths
-    new_rets = pm.StudentT.dist(nu=np.array([list(nus) for j in range(fdays)]).T, lam=1.0/new_vol_proc).random()
+    new_rets = pm.StudentT.dist(nu=np.array([list(nus) for j in range(fdays)]).T, mu=np.array([list(mus) for j in range(fdays)]).T, lam=1.0/new_vol_proc).random()
     
     return new_mkt_days, new_vol_proc, new_rets
 
