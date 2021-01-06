@@ -46,6 +46,7 @@ def compute_forecast(trace, fdays=100):
 
     # Now add the true mean
     samps = mus[:,None,:] + offset
+    raw_returns = samps
 
     # Calculate cumulative gains for each algo
     cum_returns = (1.0 + samps[:,:,:]).cumprod(axis=1) - 1.0
@@ -53,7 +54,7 @@ def compute_forecast(trace, fdays=100):
     # Slice out the cumulative gain at the final time
     ending_returns = cum_returns[:,-1,:]
 
-    return cum_returns, ending_returns
+    return raw_returns, cum_returns, ending_returns
 
 
 def plot_ending_ret_hist(ending_returns, fdays=None):
@@ -113,11 +114,10 @@ if __name__ == "__main__":
 
     # Calculate forecast
     fdays=100
-    cum_returns, ending_returns = compute_forecast(trace, fdays=fdays)
+    raw_returns, cum_returns, ending_returns = compute_forecast(trace, fdays=fdays)
 
     # Generate plots
     plot_ending_ret_hist(ending_returns, fdays=fdays)
     plot_cum_returns(cum_returns, num=1000)
-
 
 

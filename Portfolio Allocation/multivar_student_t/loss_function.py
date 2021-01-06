@@ -86,7 +86,7 @@ def visualize_loss(lams=[0.1, 0.4, 0.7, 1.0], xmin=-3.0, xmax=3.0, npoints=1000)
 if __name__ == "__main__":
     
     # Create loss function visualization
-    visualize_loss()
+    visualize_loss(lams=[0.1, 0.4, 0.7, 1.0, 2.0, 3.0])
 
     # Load data
     os.chdir(sys.path[0])
@@ -101,8 +101,9 @@ if __name__ == "__main__":
 
     # Calculate forecast
     fdays=100
-    cum_returns, ending_returns = compute_forecast(trace, fdays=fdays)
+    raw_returns, cum_returns, ending_returns = compute_forecast(trace, fdays=fdays)
 
     # Run optimizer
-    loss_and_optimize(ending_returns, lam=1.0)
+    lam = 2.0 # This sets risk penalizer
+    loss_and_optimize(ending_returns, lam=lam)
     
