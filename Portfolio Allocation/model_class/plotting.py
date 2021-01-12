@@ -214,6 +214,82 @@ def plot_bayes_cone_bal(train_df, raw_train_df, test_df, raw_test_df, pred_raw_l
 
 
 
+############################
+#### Optimization plots ####
+############################
 
+def plot_opt_weights(w_opt, mname):
+    '''
+    Generates a plot of the optimal weights.
+    '''
+    fig, axs = plt.subplots(1,1)
+    names = list(w_opt.keys())
+    vals = np.array(list(w_opt.values()))
+    axs.bar(names, 100*vals)
+    axs.set_title("Optimal Portfolio Allocation")
+    axs.set_xlabel("Algorithm")
+    axs.set_ylabel("% Allocation")
+
+    os.chdir(sys.path[0]+"/plots/")
+    fig.savefig("{}_opt_weights.png".format(mname), dpi=250)
+
+def plot_hist_opt_ending_rets(ending_rets, opt_w, mname):
+    '''
+    Plots histogram of the cumulative returns at the ending time.
+    '''
+
+    weights = np.array(list(opt_w.values()))
+    ending_vals = ending_rets @ weights
+    
+    # Now clip, for any weird errors
+    amin = np.percentile(ending_vals, 0) 
+    amax = np.percentile(ending_vals, 99.9)
+    ending_vals = np.clip(ending_vals, amin, amax)
+
+    # Other calculations
+    num_entries = len(ending_vals)
+    lower = 100*np.quantile(ending_vals, 0.05)
+    upper = 100*np.quantile(ending_vals, 0.95)
+    num_nonneg = np.sum(ending_vals >= 0)
+    prob_gain = 100*(num_nonneg/num_entries)
+
+    fig, axs = plt.subplots(1,1,figsize=(10,10))
+    axs.hist(ending_vals, bins=100)
+    axs.set_title("Distribution of Optimal Portfolio Final Returns. CI = [{:.2f}%, {:.2f}%], P(gain) = {:.2f}%".format(lower, upper, prob_gain))
+
+    os.chdir(sys.path[0]+"/plots/")
+    fig.savefig("{}_opt_ending_rets.png".format(mname), dpi=250)
+
+
+def plot_bayes_cone_opt_cum_rets(cum_returns, opt_w, mname, test="None"):
+    '''
+    Plots the bayesian cone for forward-looking cumulative returns for the optimal portfolio.
+    '''
+    
+    weights = np.array(list(opt_w.values()))
+    nsamps, ndays, ndim = cum_returns.shape
+    future_opt_rets = np.matmul(cum_returns, weights)
+    bands = compute_bands(np.matmul(m.pred_cum_returns, m.opt_weights_array))
+    
+    fig, axs = plt.subplots(1, figsize=(13, 8))
+    idx = [i for i in range(ndays)]
+    
+    # Predictions
+    axs.fill_between(idx, bands[1.0], bands[99.0], alpha=0.1, color="b", label="98% CI")
+    axs.fill_between(idx, bands[5.5], bands[94.5], alpha=0.3, color="b", label="89% CI")
+    axs.fill_between(idx, bands[12.5], bands[87.5], alpha=0.5, color="b", label="75% CI")
+    axs.fill_between(idx, bands[25], bands[75], alpha=0.8, color="b", label="50% CI")
+    axs.plot(idx, bands["median"], alpha=1.0, color="pink", label="Median")
+    
+    if test != "None":
+        future_opt_test_rets = np.matmul(test, weights)
+        axs.plot(idx, future_opt_test_rets, color="red", label="Testing Data")
+
+    axs.set_title("Optimal Portfolio Forecasted Cumulative Returns")
+    axs.legend()
+
+    
+    os.chdir(sys.path[0]+"/plots/")
+    fig.savefig("{}_opt_cum_rets.png".format(mname), dpi=250)
 
 
